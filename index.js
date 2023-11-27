@@ -35,26 +35,31 @@ async function run() {
     });
     app.get('/members/:id', async (req, res) => {
       const id = req.params.id;
-      const query = { _id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await memberCollection.findOne(query);
       res.send(result);
     });
 
+    // post data
 
-
+    app.post('/members', async (req, res) => {
+      const data = req.body;
+      const result = await memberCollection.insertOne(data);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   }
-  catch(error){
+  catch (error) {
     console.log(error);
   }
-   finally {
+  finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
   }
-  
+
 }
 run().catch(console.dir);
 
@@ -62,8 +67,8 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-    res.send('final effort will be given')
+  res.send('final effort will be given')
 })
 app.listen(port, () => {
-    console.log(`final effort will be given: ${port}`);
+  console.log(`final effort will be given: ${port}`);
 })
