@@ -67,6 +67,20 @@ async function run() {
       const result = await favoritesCollection.insertOne(data);
       res.send(result);
     });
+    // update data 
+    app.put('/members/:id', async(req, res)=>{
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const data = req.body;
+      const updatedDoc = {
+        $set: {
+            ...data
+        }
+    }
+    const result = await memberCollection.updateOne(filter, updatedDoc, options);
+    res.send(result);
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
