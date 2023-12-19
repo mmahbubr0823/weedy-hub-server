@@ -24,13 +24,23 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // // Connect the client to the server	(optional starting in v4.7)
-    // await client.connect();
+    await client.connect();
 
     const memberCollection = client.db("weddyHub").collection("members");
+    const contactCollection = client.db("weddyHub").collection("contactRequests");
+    const favoritesCollection = client.db("weddyHub").collection("favoritesBiodata");
 
     // getting data 
     app.get('/members', async (req, res) => {
       const result = await memberCollection.find().toArray();
+      res.send(result);
+    });
+    app.get('/contactRequests', async (req, res) => {
+      const result = await contactCollection.find().toArray();
+      res.send(result);
+    });
+    app.get('/favoritesBiodata', async (req, res) => {
+      const result = await favoritesCollection.find().toArray();
       res.send(result);
     });
     app.get('/members/:id', async (req, res) => {
@@ -47,9 +57,19 @@ async function run() {
       const result = await memberCollection.insertOne(data);
       res.send(result);
     });
+    app.post('/contactRequests', async (req, res) => {
+      const data = req.body;
+      const result = await contactCollection.insertOne(data);
+      res.send(result);
+    });
+    app.post('/favoritesBiodata', async (req, res) => {
+      const data = req.body;
+      const result = await favoritesCollection.insertOne(data);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
-    // await client.db("admin").command({ ping: 1 });
+    await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   }
   catch (error) {
