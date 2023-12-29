@@ -81,9 +81,14 @@ async function run() {
       const result = await favoritesCollection.find({userEmail: email}).toArray();
       res.send(result);
     });
-    app.get('/members/:email', async (req, res) => {
-      const email = req.params.email;
-      const result = await memberCollection.findOne({ContactEmail: email});
+    // app.get('/members/:email', async (req, res) => {
+    //   const email = req.params.email;
+    //   const result = await memberCollection.findOne({ContactEmail: email});
+    //   res.send(result);
+    // });
+    app.get('/members/:BiodataType', async (req, res) => {
+      const BiodataType = req.params.BiodataType;
+      const result = await memberCollection.find({BiodataType:BiodataType}).toArray();
       res.send(result);
     });
     app.get('/users/:email', async (req, res) => {
