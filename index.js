@@ -29,7 +29,39 @@ async function run() {
     const memberCollection = client.db("weddyHub").collection("members");
     const contactCollection = client.db("weddyHub").collection("contactRequests");
     const favoritesCollection = client.db("weddyHub").collection("favoritesBiodata");
+    const userCollection = client.db("weddyHub").collection("users");
 
+    // create or update user 
+    app.put('/users/:email', async (req, res) => {
+      const email = req.params.email
+      const user = req.body
+      const query = { email: email }
+      const options = { upsert: true }
+      const isExist = await userCollection.findOne(query)
+      if (isExist) {
+        // if (user?.status === 'Requested') {
+        //   const result = await usersCollection.updateOne(
+        //     query,
+        //     {
+        //       $set: user,
+        //     },
+        //     options
+        //   )
+        //   return res.send(result)
+        // } else {
+          // }
+
+            return res.send(isExist)
+      }
+      const result = await userCollection.updateOne(
+        query,
+        {
+          $set: { ...user, timestamp: Date.now() },
+        },
+        options
+      )
+      res.send(result)
+    })
     // getting data 
     app.get('/members', async (req, res) => {
       const result = await memberCollection.find().toArray();
@@ -39,8 +71,10 @@ async function run() {
       const result = await contactCollection.find().toArray();
       res.send(result);
     });
-    app.get('/favoritesBiodata', async (req, res) => {
-      const result = await favoritesCollection.find().toArray();
+    app.get('/favoritesBiodata/:email', async (req, res) => {
+      const email = req.params.email;
+      console.log(email);
+      const result = await favoritesCollection.find({userEmail:email}).toArray();
       res.send(result);
     });
     app.get('/members/:id', async (req, res) => {
