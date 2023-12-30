@@ -87,11 +87,6 @@ async function run() {
       const result = await favoritesCollection.find({userEmail: email}).toArray();
       res.send(result);
     });
-    // app.get('/members/:email', async (req, res) => {
-    //   const email = req.params.email;
-    //   const result = await memberCollection.findOne({ContactEmail: email});
-    //   res.send(result);
-    // });
     app.get('/members/:BiodataType', async (req, res) => {
       const BiodataType = req.params.BiodataType;
       const result = await memberCollection.find({BiodataType:BiodataType}).toArray();
@@ -111,12 +106,18 @@ async function run() {
       const result = await contactCollection.find({selfEmail:email}).toArray();
       res.send(result);
     });
-
+    
     // post data
 
     app.post('/members', async (req, res) => {
       const data = req.body;
       const result = await memberCollection.insertOne(data);
+      res.send(result);
+    });
+    app.get('/members/:email', async (req, res) => {
+      const email = req.query.email;
+      console.log(email);
+      const result = await memberCollection.findOne({email});
       res.send(result);
     });
     app.post('/contactRequests', async (req, res) => {
