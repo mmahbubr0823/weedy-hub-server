@@ -30,6 +30,7 @@ async function run() {
     const contactCollection = client.db("weddyHub").collection("contactRequests");
     const favoritesCollection = client.db("weddyHub").collection("favoritesBiodata");
     const userCollection = client.db("weddyHub").collection("users");
+    const premiumCollection = client.db("weddyHub").collection("premiumBioData");
 
     // create or update user 
     app.put('/users/:email', async (req, res) => {
@@ -77,7 +78,7 @@ async function run() {
       const result = await contactCollection.find().toArray();
       res.send(result);
     });
-    app.get('/favoritesBiodata', async (req, res) => {
+    app.get('/favoritesBioData', async (req, res) => {
       const result = await favoritesCollection.find().toArray();
       res.send(result);
     });
@@ -114,12 +115,12 @@ async function run() {
       const result = await memberCollection.insertOne(data);
       res.send(result);
     });
-    app.get('/members/:email', async (req, res) => {
-      const email = req.query.email;
-      console.log(email);
-      const result = await memberCollection.findOne({email});
-      res.send(result);
-    });
+    // app.get('/members/:email', async (req, res) => {
+    //   const email = req.query.email;
+    //   console.log(email);
+    //   const result = await memberCollection.findOne({email});
+    //   res.send(result);
+    // });
     app.post('/contactRequests', async (req, res) => {
       const data = req.body;
       const result = await contactCollection.insertOne(data);
@@ -130,6 +131,15 @@ async function run() {
       const result = await favoritesCollection.insertOne(data);
       res.send(result);
     });
+    // app.post('/premiumBioData', async (req, res) => {
+    //   const data = req.body;
+    //   const result = await premiumCollection.insertOne(data);
+    //   res.send(result);
+    // });
+    // app.get('/premiumBioData', async (req, res) => {
+    //   const result = await premiumCollection.find().toArray();
+    //   res.send(result);
+    // });
     // update data 
     app.put('/members/:id', async(req, res)=>{
       const id = req.params.id;
