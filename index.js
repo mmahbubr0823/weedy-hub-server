@@ -67,6 +67,12 @@ async function run() {
       const result = await memberCollection.find().toArray();
       res.send(result);
     });
+    app.get('/members/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await memberCollection.findOne(query);
+      res.send(result);
+    });
     app.get('/contactRequests', async (req, res) => {
       const result = await contactCollection.find().toArray();
       res.send(result);
@@ -91,9 +97,18 @@ async function run() {
       const result = await memberCollection.find({BiodataType:BiodataType}).toArray();
       res.send(result);
     });
+    app.get('/users', async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    });
     app.get('/users/:email', async (req, res) => {
       const email = req.params.email;
       const result = await userCollection.findOne({email});
+      res.send(result);
+    });
+    app.get('/contactRequests/:selfEmail', async (req, res) => {
+      const email = req.params.selfEmail;
+      const result = await contactCollection.find({selfEmail:email}).toArray();
       res.send(result);
     });
 
