@@ -31,6 +31,7 @@ async function run() {
     const favoritesCollection = client.db("weddyHub").collection("favoritesBiodata");
     const userCollection = client.db("weddyHub").collection("users");
     const premiumCollection = client.db("weddyHub").collection("premiumBioData");
+    const successCollection = client.db("weddyHub").collection("successStory");
 
     // create or update user 
     app.put('/users/:email', async (req, res) => {
@@ -40,19 +41,7 @@ async function run() {
       const options = { upsert: true }
       const isExist = await userCollection.findOne(query)
       if (isExist) {
-        // if (user?.status === 'Requested') {
-        //   const result = await usersCollection.updateOne(
-        //     query,
-        //     {
-        //       $set: user,
-        //     },
-        //     options
-        //   )
-        //   return res.send(result)
-        // } else {
-          // }
-
-            return res.send(isExist)
+        return res.send(isExist)
       }
       const result = await userCollection.updateOne(
         query,
@@ -70,7 +59,7 @@ async function run() {
     });
     app.get('/members/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const result = await memberCollection.findOne(query);
       res.send(result);
     });
@@ -84,13 +73,12 @@ async function run() {
     });
     app.get('/favoritesBiodata/:email', async (req, res) => {
       const email = req.params.email;
-      console.log(email);
-      const result = await favoritesCollection.find({userEmail: email}).toArray();
+      const result = await favoritesCollection.find({ userEmail: email }).toArray();
       res.send(result);
     });
     app.get('/members/:BiodataType', async (req, res) => {
       const BiodataType = req.params.BiodataType;
-      const result = await memberCollection.find({BiodataType:BiodataType}).toArray();
+      const result = await memberCollection.find({ BiodataType: BiodataType }).toArray();
       res.send(result);
     });
     app.get('/users', async (req, res) => {
@@ -99,15 +87,15 @@ async function run() {
     });
     app.get('/users/:email', async (req, res) => {
       const email = req.params.email;
-      const result = await userCollection.findOne({email});
+      const result = await userCollection.findOne({ email });
       res.send(result);
     });
     app.get('/contactRequests/:selfEmail', async (req, res) => {
       const email = req.params.selfEmail;
-      const result = await contactCollection.find({selfEmail:email}).toArray();
+      const result = await contactCollection.find({ selfEmail: email }).toArray();
       res.send(result);
     });
-    
+
     // post data
 
     app.post('/members', async (req, res) => {
@@ -115,12 +103,6 @@ async function run() {
       const result = await memberCollection.insertOne(data);
       res.send(result);
     });
-    // app.get('/members/:email', async (req, res) => {
-    //   const email = req.query.email;
-    //   console.log(email);
-    //   const result = await memberCollection.findOne({email});
-    //   res.send(result);
-    // });
     app.post('/contactRequests', async (req, res) => {
       const data = req.body;
       const result = await contactCollection.insertOne(data);
@@ -131,28 +113,38 @@ async function run() {
       const result = await favoritesCollection.insertOne(data);
       res.send(result);
     });
-    // app.post('/premiumBioData', async (req, res) => {
-    //   const data = req.body;
-    //   const result = await premiumCollection.insertOne(data);
-    //   res.send(result);
-    // });
-    // app.get('/premiumBioData', async (req, res) => {
-    //   const result = await premiumCollection.find().toArray();
-    //   res.send(result);
-    // });
+    app.post('/successStory', async (req, res) => {
+      const data = req.body;
+      const result = await successCollection.insertOne(data);
+      res.send(result);
+    });
+    app.get('/successStory', async (req, res) => {
+      const result = await successCollection.find().toArray();
+      res.send(result);
+    });
+    app.post('/premiumBioData', async (req, res) => {
+      const data = req.body;
+      console.log(data);
+      const result = await premiumCollection.insertOne(data);
+      res.send(result);
+    });
+    app.get('/premiumBioData', async (req, res) => {
+      const result = await premiumCollection.find().toArray();
+      res.send(result);
+    });
     // update data 
-    app.put('/members/:id', async(req, res)=>{
+    app.put('/members/:id', async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const data = req.body;
       const updatedDoc = {
         $set: {
-            ...data
+          ...data
         }
-    }
-    const result = await memberCollection.updateOne(filter, updatedDoc, options);
-    res.send(result);
+      }
+      const result = await memberCollection.updateOne(filter, updatedDoc, options);
+      res.send(result);
     })
 
     // Send a ping to confirm a successful connection
