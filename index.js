@@ -76,13 +76,17 @@ async function run() {
       const result = await favoritesCollection.find({ userEmail: email }).toArray();
       res.send(result);
     });
-    app.get('/members/:BiodataType', async (req, res) => {
-      const BiodataType = req.params.BiodataType;
-      const result = await memberCollection.find({ BiodataType: BiodataType }).toArray();
-      res.send(result);
-    });
+    
     app.get('/users', async (req, res) => {
       const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+    app.get('/premiumBioData', async (req, res) => {
+      const result = await premiumCollection.find().toArray();
+      res.send(result);
+    });
+    app.get('/contactRequests', async (req, res) => {
+      const result = await contactCollection.find().toArray();
       res.send(result);
     });
     app.get('/users/:email', async (req, res) => {
@@ -124,7 +128,6 @@ async function run() {
     });
     app.post('/premiumBioData', async (req, res) => {
       const data = req.body;
-      console.log(data);
       const result = await premiumCollection.insertOne(data);
       res.send(result);
     });
