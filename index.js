@@ -126,6 +126,12 @@ async function run() {
       const result = await successCollection.find().toArray();
       res.send(result);
     });
+    app.get('/successStory/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await successCollection.findOne(query);
+      res.send(result);
+    });
     app.post('/premiumBioData', async (req, res) => {
       const data = req.body;
       const result = await premiumCollection.insertOne(data);
