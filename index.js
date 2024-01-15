@@ -54,8 +54,18 @@ async function run() {
     })
     // getting data 
     app.get('/members', async (req, res) => {
-      const result = await memberCollection.find().toArray();
+      console.log(req.query);
+      const page = parseInt(req.query.page);
+      const size = parseInt(req.query.size);
+      const result = await memberCollection.find()
+      .skip(page*size)
+      .limit(size)
+      .toArray();
       res.send(result);
+    });
+    app.get('/membersCount', async (req, res) => {
+      const count = await memberCollection.estimatedDocumentCount();
+      res.send({count});
     });
     app.get('/members/:id', async (req, res) => {
       const id = req.params.id;
