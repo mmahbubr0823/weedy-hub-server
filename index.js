@@ -1,12 +1,18 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser')
 require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
 
 // middlewares
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173'], 
+  credentials: true
+}));
 app.use(express.json());
+app.use(cookieParser());
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -33,6 +39,24 @@ async function run() {
     const premiumCollection = client.db("weddyHub").collection("premiumBioData");
     const successCollection = client.db("weddyHub").collection("successStory");
 
+
+    app.post('/jwt', async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.TOKEN_SECRET, { expiresIn: '24h' })
+      res
+      .cookie('token', token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none'
+      })
+      .send(token);
+      console.log({success: true});
+    })
+    app.post('/logout', async (req, res) => {
+      const user = req.body;
+      res.clearCookie('token', { maxAge: 0 }).send({ success: true })
+  })
+
     // create or update user 
     app.put('/users/:email', async (req, res) => {
       const email = req.params.email
@@ -54,18 +78,17 @@ async function run() {
     })
     // getting data 
     app.get('/members', async (req, res) => {
-      console.log(req.query);
       const page = parseInt(req.query.page);
       const size = parseInt(req.query.size);
       const result = await memberCollection.find()
-      .skip(page*size)
-      .limit(size)
-      .toArray();
+        .skip(page * size)
+        .limit(size)
+        .toArray();
       res.send(result);
     });
     app.get('/membersCount', async (req, res) => {
       const count = await memberCollection.estimatedDocumentCount();
-      res.send({count});
+      res.send({ count });
     });
     app.get('/members/:id', async (req, res) => {
       const id = req.params.id;
@@ -86,7 +109,7 @@ async function run() {
       const result = await favoritesCollection.find({ userEmail: email }).toArray();
       res.send(result);
     });
-    
+
     app.get('/users', async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
