@@ -14,6 +14,21 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
+// verify token 
+const verifyToken = async (req, res, next) => {
+  const token = req.cookies?.token;
+  if (!token) {
+    return res.status(401).send({ message: 'unauthorized access' })
+  }
+  jwt.verify(token, process.env.TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({ message: 'unauthorized access' })
+    }
+    req.user = decoded
+    next()
+  })
+}
+
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.scdnbhm.mongodb.net/?retryWrites=true&w=majority`;
@@ -39,6 +54,25 @@ async function run() {
     const premiumCollection = client.db("weddyHub").collection("premiumBioData");
     const successCollection = client.db("weddyHub").collection("successStory");
 
+     // role verification
+    // for admins
+    const verifyAdmin = async (req, res, next) => {
+      const user = req.user;
+      const query = { email: user?.email }
+      const result = await userCollection.findOne(query)
+      if (!result || result?.role !== 'admin')
+        return res.status(401).send({ message: 'unauthorized access' })
+      next()
+    }
+    // for random users 
+    const verifyRandomUser = async (req, res, next) => {
+      const user = req.user;
+      const query = { email: user?.email }
+      const result = await userCollection.findOne(query);
+      if (!result || result?.role !== 'randomUser')
+        return res.status(401).send({ message: 'unauthorized access' })
+      next()
+    }
 
     app.post('/jwt', async (req, res) => {
       const user = req.body;
@@ -77,7 +111,7 @@ async function run() {
       res.send(result)
     })
     // getting data 
-    app.get('/members', async (req, res) => {
+    app.get('/members',  async (req, res) => {
       const page = parseInt(req.query.page);
       const size = parseInt(req.query.size);
       const result = await memberCollection.find()
@@ -90,7 +124,7 @@ async function run() {
       const count = await memberCollection.estimatedDocumentCount();
       res.send({ count });
     });
-    app.get('/members/:id', async (req, res) => {
+    app.get('/members/:id', verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
       const result = await memberCollection.findOne(query);
@@ -100,17 +134,20 @@ async function run() {
       const result = await contactCollection.find().toArray();
       res.send(result);
     });
-    app.get('/favoritesBioData', async (req, res) => {
+    app.get('/favoritesBiodata', verifyToken, async (req, res) => {
       const result = await favoritesCollection.find().toArray();
       res.send(result);
     });
-    app.get('/favoritesBiodata/:email', async (req, res) => {
+    app.get('/favoritesBiodata/:email', verifyToken, async (req, res) => {
       const email = req.params.email;
+      if (req.user?.loggedUser !== email) {
+        return res.status(403).send({ message: 'forbidden access' })
+    }
       const result = await favoritesCollection.find({ userEmail: email }).toArray();
       res.send(result);
     });
 
-    app.get('/users', async (req, res) => {
+    app.get('/users', verifyToken, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
@@ -122,12 +159,12 @@ async function run() {
       const result = await contactCollection.find().toArray();
       res.send(result);
     });
-    app.get('/users/:email', async (req, res) => {
+    app.get('/users/:email', verifyToken, async (req, res) => {
       const email = req.params.email;
       const result = await userCollection.findOne({ email });
       res.send(result);
     });
-    app.get('/contactRequests/:selfEmail', async (req, res) => {
+    app.get('/contactRequests/:selfEmail',verifyToken, async (req, res) => {
       const email = req.params.selfEmail;
       const result = await contactCollection.find({ selfEmail: email }).toArray();
       res.send(result);
