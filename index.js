@@ -84,10 +84,9 @@ async function run() {
         sameSite: 'none'
       })
       .send(token);
-      console.log({success: true});
     })
+    // logout 
     app.post('/logout', async (req, res) => {
-      const user = req.body;
       res.clearCookie('token', { maxAge: 0 }).send({ success: true })
   })
 
@@ -95,7 +94,7 @@ async function run() {
     app.put('/users/:email', async (req, res) => {
       const email = req.params.email
       const user = req.body
-      const query = { email: email }
+      const query = { email: email };
       const options = { upsert: true }
       const isExist = await userCollection.findOne(query)
       if (isExist) {
@@ -225,7 +224,6 @@ async function run() {
       const result = await memberCollection.updateOne(filter, updatedDoc, options);
       res.send(result);
     })
-
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
