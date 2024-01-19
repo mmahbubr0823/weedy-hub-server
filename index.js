@@ -8,7 +8,7 @@ const port = process.env.PORT || 5000;
 
 // middlewares
 app.use(cors({
-  origin: ['https://assignment-12-server-eta-five.vercel.app'], 
+  origin: ['http://localhost:5173'], 
   credentials: true
 }));
 app.use(express.json());
@@ -92,11 +92,11 @@ async function run() {
 
     // create or update user 
     app.put('/users/:email', async (req, res) => {
-      const email = req.params.email
-      const user = req.body
+      const email = req.params.email;
+      const user = req.body;
       const query = { email: email };
-      const options = { upsert: true }
-      const isExist = await userCollection.findOne(query)
+      const options = { upsert: true };
+      const isExist = await userCollection.findOne(query);
       if (isExist) {
         return res.send(isExist)
       }
@@ -223,6 +223,30 @@ async function run() {
       }
       const result = await memberCollection.updateOne(filter, updatedDoc, options);
       res.send(result);
+    })
+    // make admin 
+    app.patch('/users/makeAdmin/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await userCollection.updateOne(
+        query,
+        {
+          $set: { role:'admin' },
+        },
+      )
+      res.send(result)
+    })
+    // make premium 
+    app.patch('/users/makePremium/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await userCollection.updateOne(
+        query,
+        {
+          $set: { role:'premium' },
+        },
+      )
+      res.send(result)
     })
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
