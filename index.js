@@ -8,7 +8,7 @@ const port = process.env.PORT || 5000;
 
 // middlewares
 app.use(cors({
-  origin: ['http://localhost:5173'], 
+  origin: ['http://localhost:5173'],
   credentials: true
 }));
 app.use(express.json());
@@ -45,7 +45,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // // Connect the client to the server	(optional starting in v4.7)
-    // await client.connect();
+    await client.connect();
 
     const memberCollection = client.db("weddyHub").collection("members");
     const contactCollection = client.db("weddyHub").collection("contactRequests");
@@ -54,7 +54,7 @@ async function run() {
     const premiumCollection = client.db("weddyHub").collection("premiumBioData");
     const successCollection = client.db("weddyHub").collection("successStory");
 
-     // role verification
+    // role verification
     // for admins
     const verifyAdmin = async (req, res, next) => {
       const user = req.user;
@@ -78,17 +78,17 @@ async function run() {
       const user = req.body;
       const token = jwt.sign(user, process.env.TOKEN_SECRET, { expiresIn: '24h' })
       res
-      .cookie('token', token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none'
-      })
-      .send(token);
+        .cookie('token', token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: 'none'
+        })
+        .send(token);
     })
     // logout 
     app.post('/logout', async (req, res) => {
       res.clearCookie('token', { maxAge: 0 }).send({ success: true })
-  })
+    })
 
     // create or update user 
     app.put('/users/:email', async (req, res) => {
@@ -110,7 +110,7 @@ async function run() {
       res.send(result)
     })
     // getting data 
-    app.get('/members',  async (req, res) => {
+    app.get('/members', async (req, res) => {
       const page = parseInt(req.query.page);
       const size = parseInt(req.query.size);
       const result = await memberCollection.find()
@@ -141,7 +141,7 @@ async function run() {
       const email = req.params.email;
       if (req.user?.loggedUser !== email) {
         return res.status(403).send({ message: 'forbidden access' })
-    }
+      }
       const result = await favoritesCollection.find({ userEmail: email }).toArray();
       res.send(result);
     });
@@ -163,7 +163,7 @@ async function run() {
       const result = await userCollection.findOne({ email });
       res.send(result);
     });
-    app.get('/contactRequests/:selfEmail',verifyToken, async (req, res) => {
+    app.get('/contactRequests/:selfEmail', verifyToken, async (req, res) => {
       const email = req.params.selfEmail;
       const result = await contactCollection.find({ selfEmail: email }).toArray();
       res.send(result);
@@ -210,10 +210,10 @@ async function run() {
       const result = await premiumCollection.find().toArray();
       res.send(result);
     });
-    // update data 
-    app.put('/members/:id', async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
+    // update bio data 
+    app.put('/editBioData/:email', async (req, res) => {
+      const {email} = req.params;
+      const query = { ContactEmail: email }
       const options = { upsert: true };
       const data = req.body;
       const updatedDoc = {
@@ -221,7 +221,7 @@ async function run() {
           ...data
         }
       }
-      const result = await memberCollection.updateOne(filter, updatedDoc, options);
+      const result = await memberCollection.updateOne(query, updatedDoc, options);
       res.send(result);
     })
     // make admin 
@@ -231,7 +231,7 @@ async function run() {
       const result = await userCollection.updateOne(
         query,
         {
-          $set: { role:'admin' },
+          $set: { role: 'admin' },
         },
       )
       res.send(result)
@@ -243,14 +243,27 @@ async function run() {
       const result = await userCollection.updateOne(
         query,
         {
-          $set: { role:'premium' },
+          $set: { role: 'premium' },
         },
       )
       res.send(result)
     })
+    // delete items 
+    app.delete('/contactRequests/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await contactCollection.deleteOne(query);
+      res.send(result);
+    });
+    app.delete('/favoritesBiodata/:id', verifyToken, async (req, res) => {
+      const { id } = req.params;
+      const query = { _id: new ObjectId(id) };
+      const result = await favoritesCollection.deleteOne(query);
+      res.send(result);
+    });
     // Send a ping to confirm a successful connection
-    // await client.db("admin").command({ ping: 1 });
-    // console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    await client.db("admin").command({ ping: 1 });
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
   }
   catch (error) {
     console.log(error);
